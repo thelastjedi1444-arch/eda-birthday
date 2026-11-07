@@ -1,0 +1,2512 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Eda ❤️ Ahmet | Ofiste Gizli Kaçamak</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0f172a;
+      --card-bg: #1e293b;
+      --accent: #f43f5e;
+      --accent-glow: rgba(244, 63, 94, 0.38);
+      --gold: #f59e0b;
+      --emerald: #10b981;
+      --sky: #38bdf8;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: #090d16;
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #game-wrapper {
+      position: relative;
+      width: 100%;
+      max-width: 440px;
+      height: 100dvh;
+      max-height: 900px;
+      background: #f8fafc;
+      overflow: hidden;
+      box-shadow: 0 25px 80px rgba(0, 0, 0, 0.75);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    @media (min-width: 441px) {
+      #game-wrapper {
+        height: 95dvh;
+        border-radius: 28px;
+        border: 4px solid #334155;
+      }
+    }
+
+    /* TOP COMPETITIVE HUD */
+    .hud {
+      position: relative;
+      z-index: 25;
+      background: #0f172a;
+      color: #fff;
+      padding: 10px 14px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.28);
+    }
+
+    .hud-row-1 {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .player-pill {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .player-pill span.active-name {
+      color: #fb7185;
+    }
+
+    .scoreboard-strip {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      font-size: 0.72rem;
+      font-weight: 700;
+      background: rgba(15, 23, 42, 0.85);
+      padding: 4px 9px;
+      border-radius: 8px;
+      border: 1px solid #334155;
+    }
+
+    .scoreboard-strip .vs {
+      color: var(--text-muted);
+      font-size: 0.65rem;
+    }
+
+    .hud-controls {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .icon-btn {
+      border: 1px solid #334155;
+      background: #1e293b;
+      color: #f8fafc;
+      width: 31px;
+      height: 31px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: background 0.15s, transform 0.1s;
+    }
+
+    .icon-btn:active {
+      background: #334155;
+      transform: scale(0.92);
+    }
+
+    .hud-row-2 {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .stat-box {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.78rem;
+      font-weight: 800;
+    }
+
+    .stat-box.timer-box {
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.14);
+      padding: 3px 9px;
+      border-radius: 8px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .stat-box.timer-box.urgent {
+      color: #f43f5e;
+      background: rgba(244, 63, 94, 0.22);
+      animation: pulseUrgent 0.45s infinite alternate;
+    }
+
+    @keyframes pulseUrgent {
+      from { transform: scale(1); }
+      to { transform: scale(1.06); }
+    }
+
+    .combo-badge {
+      background: linear-gradient(135deg, #f59e0b, #ea580c);
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 6px;
+      opacity: 0;
+      transform: scale(0.8);
+      transition: all 0.15s;
+    }
+
+    .combo-badge.active {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    /* PROGRESS BAR WITH DECAY / BOOST INDICATOR */
+    .progress-wrap {
+      width: 100%;
+      height: 19px;
+      background: #1e293b;
+      border-radius: 999px;
+      overflow: hidden;
+      position: relative;
+      border: 1px solid #334155;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #f43f5e, #e11d48);
+      border-radius: 999px;
+      transition: width 0.06s linear;
+    }
+
+    .progress-fill.risk-boost {
+      background: linear-gradient(90deg, #f59e0b, #f43f5e);
+      box-shadow: 0 0 12px rgba(245, 158, 11, 0.85);
+    }
+
+    .progress-fill.hyper-boost {
+      background: linear-gradient(90deg, #a855f7, #ec4899, #f59e0b);
+      box-shadow: 0 0 15px rgba(236, 72, 153, 0.9);
+    }
+
+    .progress-label {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 10px;
+      font-size: 0.66rem;
+      font-weight: 800;
+      color: #fff;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.85);
+    }
+
+    /* CLEAN MODERN SALES OFFICE SCENE */
+    .scene {
+      position: relative;
+      flex: 1;
+      width: 100%;
+      background: linear-gradient(180deg, #f1f5f9 0%, #e2e8f0 64%, #cbd5e1 64%, #94a3b8 100%);
+      overflow: hidden;
+    }
+
+    /* Wall Frame: Couple Photo ("Ayın Çifti") */
+    .wall-frame {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      width: 100px;
+      background: #fff;
+      padding: 5px 5px 20px 5px;
+      border-radius: 8px;
+      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+      border: 1px solid #e2e8f0;
+      z-index: 5;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .wall-frame:active {
+      transform: scale(1.06);
+    }
+
+    .wall-frame img {
+      width: 100%;
+      height: 70px;
+      object-fit: cover;
+      border-radius: 4px;
+      display: block;
+    }
+
+    .wall-frame-title {
+      position: absolute;
+      bottom: 4px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-size: 0.6rem;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: 0.2px;
+    }
+
+    /* Clean Sales Target Board on Right Wall */
+    .sales-board {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      width: 108px;
+      background: #fff;
+      border-radius: 8px;
+      padding: 7px 9px;
+      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.1);
+      border: 1px solid #e2e8f0;
+      z-index: 5;
+    }
+
+    .sales-board-header {
+      font-size: 0.58rem;
+      font-weight: 800;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .sales-bars {
+      display: flex;
+      align-items: flex-end;
+      gap: 5px;
+      height: 34px;
+      padding-top: 4px;
+      border-bottom: 1.5px solid #cbd5e1;
+    }
+
+    .s-bar {
+      flex: 1;
+      background: #cbd5e1;
+      border-radius: 2px 2px 0 0;
+      transition: height 0.3s;
+    }
+    .s-bar.b1 { height: 45%; }
+    .s-bar.b2 { height: 65%; }
+    .s-bar.b3 { height: 55%; }
+    .s-bar.b4 { height: 95%; background: #f43f5e; }
+
+    .sales-board-footer {
+      font-size: 0.6rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin-top: 4px;
+    }
+
+    /* PATRON STATION */
+    .boss-station {
+      position: absolute;
+      top: 22px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 175px;
+      height: 155px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      z-index: 7;
+    }
+
+    .boss-alert {
+      position: absolute;
+      top: -14px;
+      background: #0f172a;
+      color: #fff;
+      font-weight: 800;
+      font-size: 0.76rem;
+      padding: 5px 12px;
+      border-radius: 12px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.22);
+      opacity: 0;
+      transform: scale(0.7) translateY(8px);
+      transition: all 0.14s cubic-bezier(0.34, 1.56, 0.64, 1);
+      z-index: 15;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    .boss-alert.show-warn {
+      opacity: 1;
+      background: #f59e0b;
+      color: #0f172a;
+      transform: scale(1) translateY(0);
+    }
+
+    .boss-alert.show-danger {
+      opacity: 1;
+      background: #e11d48;
+      color: #fff;
+      transform: scale(1.05) translateY(0);
+    }
+
+    .boss-alert.show-coffee {
+      opacity: 1;
+      background: #10b981;
+      color: #fff;
+      transform: scale(1) translateY(0);
+    }
+
+    .boss-alert.show-calm {
+      opacity: 1;
+      background: #334155;
+      color: #e2e8f0;
+      font-size: 0.7rem;
+      transform: scale(0.95) translateY(0);
+    }
+
+    /* Countdown bar inside warning badge */
+    .warn-timer-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      height: 3.5px;
+      width: 100%;
+      background: #9f1239;
+      transform-origin: left center;
+      display: none;
+    }
+
+    .boss-alert.show-warn .warn-timer-bar {
+      display: block;
+    }
+
+    .boss-character {
+      width: 106px;
+      height: 110px;
+      position: relative;
+      transition: transform 0.2s ease;
+    }
+
+    .boss-character.warning {
+      animation: bossTwitch 0.16s infinite;
+    }
+
+    @keyframes bossTwitch {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-3px) rotate(-2.5deg); }
+      75% { transform: translateX(3px) rotate(2.5deg); }
+    }
+
+    .boss-desk {
+      width: 156px;
+      height: 26px;
+      background: #1e293b;
+      border-radius: 6px;
+      border-bottom: 5px solid #0f172a;
+      position: relative;
+      margin-top: -12px;
+      z-index: 8;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .boss-nameplate {
+      color: #f8fafc;
+      font-size: 0.6rem;
+      font-weight: 800;
+      letter-spacing: 1.2px;
+    }
+
+    .vision-cone {
+      position: absolute;
+      top: 90px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 340px;
+      height: 280px;
+      background: radial-gradient(ellipse at top, rgba(225, 29, 72, 0.28) 0%, rgba(225, 29, 72, 0) 70%);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s;
+      z-index: 4;
+    }
+
+    .vision-cone.active {
+      opacity: 1;
+    }
+
+    .vision-cone.safe-look {
+      background: radial-gradient(ellipse at top, rgba(16, 185, 129, 0.22) 0%, rgba(16, 185, 129, 0) 70%);
+      opacity: 1;
+    }
+
+    /* FLOATING BONUS ITEM IN SCENE */
+    .floating-bonus {
+      position: absolute;
+      z-index: 32;
+      background: linear-gradient(135deg, #fef08a, #f59e0b);
+      color: #0f172a;
+      font-weight: 800;
+      font-size: 0.78rem;
+      padding: 6px 12px;
+      border-radius: 999px;
+      box-shadow: 0 6px 20px rgba(245, 158, 11, 0.55);
+      border: 2px solid #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      animation: floatBob 0.8s ease-in-out infinite alternate;
+      transition: transform 0.12s;
+    }
+
+    .floating-bonus:active {
+      transform: scale(0.85);
+    }
+
+    @keyframes floatBob {
+      from { transform: translateY(0px) scale(1); }
+      to { transform: translateY(-7px) scale(1.06); }
+    }
+
+    /* RANDOM OFFICE HAZARDS (OBSTACLES) */
+    .phone-hazard {
+      position: absolute;
+      bottom: 86px;
+      left: 50%;
+      transform: translateX(-50%) scale(0);
+      background: #e11d48;
+      color: #fff;
+      padding: 8px 16px 11px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      box-shadow: 0 8px 25px rgba(225, 29, 72, 0.55);
+      z-index: 33;
+      cursor: pointer;
+      border: 2px solid #fff;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      overflow: hidden;
+      transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+      white-space: nowrap;
+    }
+
+    .phone-hazard.active {
+      transform: translateX(-50%) scale(1);
+      animation: ringShake 0.24s infinite;
+    }
+
+    .phone-timer-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      height: 4px;
+      width: 100%;
+      background: #fef08a;
+      transform-origin: left center;
+    }
+
+    @keyframes ringShake {
+      0%, 100% { transform: translateX(-50%) rotate(-2.5deg); }
+      50% { transform: translateX(-50%) rotate(2.5deg); }
+    }
+
+    /* COUPLE WORKSTATION (EDA & AHMET) */
+    .couple-area {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 390px;
+      height: 255px;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    /* SHIELD OVERLAY WHEN EXCEL SHIELD ACTIVE */
+    .shield-banner {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%) scale(0);
+      background: rgba(16, 185, 129, 0.92);
+      color: #fff;
+      font-size: 0.72rem;
+      font-weight: 800;
+      padding: 4px 12px;
+      border-radius: 999px;
+      border: 1.5px solid #a7f3d0;
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+      z-index: 22;
+      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      white-space: nowrap;
+    }
+
+    .shield-banner.active {
+      transform: translateX(-50%) scale(1);
+    }
+
+    .characters-row {
+      position: relative;
+      width: 315px;
+      height: 175px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      padding: 0 12px;
+      z-index: 11;
+    }
+
+    .char-wrap {
+      position: relative;
+      width: 126px;
+      height: 168px;
+      transition: transform 0.16s cubic-bezier(0.34, 1.56, 0.64, 1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .char-label {
+      background: #0f172a;
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.72rem;
+      padding: 2px 9px;
+      border-radius: 999px;
+      margin-bottom: 3px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .couple-area.kissing .char-eda {
+      transform: translateX(36px) rotate(7deg) scale(1.04);
+    }
+
+    .couple-area.kissing .char-ahmet {
+      transform: translateX(-36px) rotate(-7deg) scale(1.04);
+    }
+
+    .couple-area.caught .char-eda {
+      transform: translateX(-10px) translateY(-6px) rotate(-8deg);
+    }
+
+    .couple-area.caught .char-ahmet {
+      transform: translateX(10px) translateY(-6px) rotate(8deg);
+    }
+
+    .kiss-burst {
+      position: absolute;
+      top: 26px;
+      left: 50%;
+      transform: translateX(-50%) scale(0);
+      font-size: 2rem;
+      z-index: 18;
+      opacity: 0;
+      transition: all 0.16s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .couple-area.kissing .kiss-burst {
+      transform: translateX(-50%) scale(1.1);
+      opacity: 1;
+      animation: pulseHeart 0.42s infinite alternate;
+    }
+
+    @keyframes pulseHeart {
+      from { transform: translateX(-50%) scale(0.95); }
+      to { transform: translateX(-50%) scale(1.2); }
+    }
+
+    /* Sales Desk */
+    .main-desk {
+      width: 92%;
+      height: 66px;
+      background: #334155;
+      border-top: 6px solid #64748b;
+      border-bottom: 8px solid #1e293b;
+      border-radius: 12px;
+      position: relative;
+      z-index: 12;
+      box-shadow: 0 12px 24px rgba(15, 23, 42, 0.22);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .desk-badge {
+      background: rgba(15, 23, 42, 0.65);
+      color: #cbd5e1;
+      font-size: 0.64rem;
+      font-weight: 800;
+      padding: 4px 12px;
+      border-radius: 6px;
+      letter-spacing: 1px;
+    }
+
+    .laptop {
+      width: 66px;
+      height: 40px;
+      background: #94a3b8;
+      border-radius: 6px 6px 0 0;
+      position: absolute;
+      top: -40px;
+      border: 2.5px solid #cbd5e1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 0.75rem;
+    }
+    .laptop.left-laptop { left: 26px; }
+    .laptop.right-laptop { right: 26px; }
+
+    .laptop-base {
+      position: absolute;
+      bottom: -5px;
+      width: 78px;
+      height: 5px;
+      background: #475569;
+      border-radius: 3px;
+    }
+
+    /* BOTTOM CONTROLS & POWER-UP BAR */
+    .controls {
+      position: relative;
+      z-index: 20;
+      padding: 10px 14px 14px;
+      background: #0f172a;
+      border-top: 1px solid #1e293b;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .powerups-row {
+      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 7px;
+    }
+
+    .power-btn {
+      background: #1e293b;
+      border: 1.5px solid #334155;
+      color: #f8fafc;
+      border-radius: 11px;
+      padding: 6px 6px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      transition: all 0.15s;
+      position: relative;
+    }
+
+    .power-btn:active:not(:disabled) {
+      transform: scale(0.95);
+    }
+
+    .power-btn.active-buff {
+      border-color: #10b981;
+      background: rgba(16, 185, 129, 0.18);
+      box-shadow: 0 0 12px rgba(16, 185, 129, 0.35);
+    }
+
+    .power-btn:disabled {
+      opacity: 0.42;
+      cursor: not-allowed;
+    }
+
+    .power-count {
+      font-size: 0.62rem;
+      color: #fbbf24;
+      font-weight: 800;
+    }
+
+    .kiss-btn {
+      width: 100%;
+      padding: 15px 20px;
+      border: none;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
+      color: #fff;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.02rem;
+      font-weight: 800;
+      letter-spacing: 0.4px;
+      box-shadow: 0 5px 0 #9f1239, 0 8px 25px var(--accent-glow);
+      cursor: pointer;
+      transition: transform 0.08s, box-shadow 0.08s;
+      touch-action: none;
+    }
+
+    .kiss-btn:active, .kiss-btn.pressed {
+      transform: translateY(4px);
+      box-shadow: 0 1px 0 #9f1239;
+    }
+
+    .hint-text {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-align: center;
+    }
+
+    /* FLOATING SCORE / PARTICLES */
+    .particle {
+      position: absolute;
+      pointer-events: none;
+      z-index: 35;
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #e11d48;
+      text-shadow: 0 2px 6px rgba(255,255,255,0.9);
+      animation: floatUp 0.9s ease-out forwards;
+      white-space: nowrap;
+    }
+
+    @keyframes floatUp {
+      0% { opacity: 1; transform: translateY(0) scale(0.85); }
+      100% { opacity: 0; transform: translateY(-70px) scale(1.15); }
+    }
+
+    /* MODALS */
+    .overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(9, 13, 22, 0.86);
+      backdrop-filter: blur(8px);
+      z-index: 50;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+      opacity: 1;
+      transition: opacity 0.25s ease;
+    }
+
+    .overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .modal-card {
+      background: #1e293b;
+      color: #f8fafc;
+      width: 100%;
+      max-width: 380px;
+      max-height: 90dvh;
+      overflow-y: auto;
+      border-radius: 24px;
+      padding: 20px 18px;
+      text-align: center;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.65);
+      border: 1px solid #334155;
+      animation: popIn 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes popIn {
+      from { transform: scale(0.9); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .modal-photo {
+      width: 100%;
+      height: 155px;
+      border-radius: 14px;
+      overflow: hidden;
+      margin-bottom: 12px;
+      border: 2px solid #334155;
+      position: relative;
+    }
+
+    .modal-photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .modal-tag {
+      display: inline-block;
+      background: rgba(244, 63, 94, 0.15);
+      color: #fb7185;
+      font-size: 0.7rem;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 999px;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+
+    .modal-title {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+
+    .modal-text {
+      font-size: 0.84rem;
+      color: #cbd5e1;
+      line-height: 1.48;
+      margin-bottom: 14px;
+    }
+
+    /* PLAYER SELECTOR IN START MODAL */
+    .player-select-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .player-option {
+      background: #0f172a;
+      border: 2px solid #334155;
+      color: #94a3b8;
+      padding: 11px 10px;
+      border-radius: 14px;
+      font-weight: 800;
+      font-size: 0.88rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .player-option.selected {
+      border-color: #f43f5e;
+      background: rgba(244, 63, 94, 0.12);
+      color: #fff;
+      box-shadow: 0 0 15px rgba(244, 63, 94, 0.25);
+    }
+
+    /* COMPACT LEADERBOARD IN MODAL */
+    .duel-board {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 14px;
+      padding: 10px;
+      margin-bottom: 14px;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+    }
+
+    .duel-col {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .duel-name {
+      font-size: 0.72rem;
+      color: #94a3b8;
+      font-weight: 700;
+    }
+
+    .duel-score {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .duel-score.leader {
+      color: #fbbf24;
+    }
+
+    /* KISS TOLL BOX */
+    .kiss-toll-box {
+      background: rgba(244, 63, 94, 0.1);
+      border: 1.5px dashed #f43f5e;
+      border-radius: 16px;
+      padding: 12px 10px;
+      margin-bottom: 14px;
+    }
+
+    .kiss-toll-title {
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: #fb7185;
+      margin-bottom: 5px;
+    }
+
+    .kiss-toll-desc {
+      font-size: 0.78rem;
+      color: #e2e8f0;
+      margin-bottom: 10px;
+      line-height: 1.4;
+    }
+
+    .kiss-check-row {
+      display: flex;
+      justify-content: center;
+      gap: 7px;
+      flex-wrap: wrap;
+    }
+
+    .kiss-token-btn {
+      background: #0f172a;
+      border: 1.5px solid #f43f5e;
+      color: #fb7185;
+      font-size: 0.78rem;
+      font-weight: 800;
+      padding: 7px 11px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .kiss-token-btn.done {
+      background: #f43f5e;
+      color: #fff;
+    }
+
+    .action-btn {
+      width: 100%;
+      padding: 13px 18px;
+      border: none;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
+      color: #fff;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 4px 15px var(--accent-glow);
+      transition: opacity 0.15s, transform 0.1s;
+    }
+
+    .action-btn:disabled {
+      background: #334155;
+      color: #64748b;
+      box-shadow: none;
+      cursor: not-allowed;
+    }
+
+    .secondary-btn {
+      margin-top: 8px;
+      width: 100%;
+      padding: 11px;
+      border: 1px solid #334155;
+      border-radius: 14px;
+      background: rgba(15, 23, 42, 0.6);
+      color: #cbd5e1;
+      font-size: 0.84rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .secondary-btn:active {
+      background: #334155;
+    }
+
+    .photo-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    .photo-grid img {
+      width: 100%;
+      height: 85px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1.5px solid #475569;
+    }
+
+    /* QR CODE MODAL STYLING */
+    .qr-box {
+      background: #fff;
+      padding: 14px;
+      border-radius: 18px;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      margin: 8px auto 14px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+    }
+
+    .qr-box img {
+      width: 190px;
+      height: 190px;
+      display: block;
+    }
+
+    /* FLASH RED WHEN CAUGHT */
+    .caught-flash {
+      position: absolute;
+      inset: 0;
+      background: rgba(225, 29, 72, 0.38);
+      z-index: 40;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+
+    .caught-flash.active {
+      opacity: 1;
+    }
+
+    .caught-toast {
+      position: absolute;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.6);
+      background: #0f172a;
+      color: #fff;
+      font-size: 0.9rem;
+      font-weight: 800;
+      padding: 11px 18px;
+      border-radius: 14px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.45);
+      z-index: 45;
+      opacity: 0;
+      pointer-events: none;
+      white-space: nowrap;
+      border: 2px solid #e11d48;
+      transition: all 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .caught-toast.show {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    /* CONFETTI CANVAS */
+    #confetti-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 55;
+    }
+  </style>
+</head>
+<body>
+
+<div id="game-wrapper">
+  <canvas id="confetti-canvas"></canvas>
+  <div class="caught-flash" id="caught-flash"></div>
+  <div class="caught-toast" id="caught-toast">🚨 PATRON YAKALADI!</div>
+
+  <!-- TOP COMPETITIVE HUD -->
+  <div class="hud">
+    <div class="hud-row-1">
+      <div class="player-pill">
+        Oyuncu: <span class="active-name" id="hud-player-name">Eda</span>
+      </div>
+      <div class="scoreboard-strip">
+        <span>Eda: <b id="hud-eda-best">0</b></span>
+        <span class="vs">VS</span>
+        <span>Ahmet: <b id="hud-ahmet-best">0</b></span>
+      </div>
+      <div class="hud-controls">
+        <button class="icon-btn" id="qr-btn" title="QR Kod ile Paylaş">📱</button>
+        <button class="icon-btn" id="sound-btn" title="Ses">🔊</button>
+        <button class="icon-btn" id="pause-btn" title="Durdur">⏸️</button>
+      </div>
+    </div>
+
+    <div class="hud-row-2">
+      <div class="stat-box" id="level-badge">Kat 1/4</div>
+      <div class="stat-box timer-box" id="timer-box">⏱️ <span id="time-val">38.0</span>s</div>
+      <div class="combo-badge" id="combo-badge">🔥 x1.0</div>
+      <div class="stat-box">Skor: <span id="score-val">0</span></div>
+      <div class="stat-box" id="lives-display">❤️❤️❤️</div>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-fill" id="progress-fill"></div>
+      <div class="progress-label">
+        <span id="stage-hazard-label">SEVİYE HEDEFİ</span>
+        <span id="progress-pct">%0</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- OFFICE SCENE -->
+  <div class="scene" id="scene-area">
+    <!-- Left Wall: Ayın Çifti Frame with real couple photo -->
+    <div class="wall-frame" id="wall-frame-card" title="Fotoğrafı Değiştir">
+      <img id="wall-photo" src="foto1.jpg" alt="Eda & Ahmet" />
+      <div class="wall-frame-title">🏆 AYIN ÇİFTİ</div>
+    </div>
+
+    <!-- Right Wall: Sales Target Chart -->
+    <div class="sales-board">
+      <div class="sales-board-header">SATIŞ EKİBİ</div>
+      <div class="sales-bars">
+        <div class="s-bar b1"></div>
+        <div class="s-bar b2"></div>
+        <div class="s-bar b3"></div>
+        <div class="s-bar b4"></div>
+      </div>
+      <div class="sales-board-footer">Eda & Ahmet 📈</div>
+    </div>
+
+    <!-- Vision Cone -->
+    <div class="vision-cone" id="vision-cone"></div>
+
+    <!-- PATRON STATION -->
+    <div class="boss-station">
+      <div class="boss-alert" id="boss-alert">
+        <span id="boss-alert-text">❗ DÖNÜYOR</span>
+        <div class="warn-timer-bar" id="warn-timer-bar"></div>
+      </div>
+      <div class="boss-character" id="boss-char">
+        <!-- PATRON BACK VIEW -->
+        <svg id="boss-svg-back" viewBox="0 0 120 120" width="100%" height="100%">
+          <rect x="22" y="28" width="76" height="82" rx="14" fill="#1e293b" stroke="#0f172a" stroke-width="3"/>
+          <path d="M24 112 C24 76, 96 76, 96 112 Z" fill="#334155"/>
+          <circle cx="60" cy="52" r="23" fill="#eab676"/>
+          <path d="M37 52 C37 32, 83 32, 83 52 C83 62, 37 62, 37 52 Z" fill="#1e293b"/>
+          <circle cx="36" cy="54" r="4.5" fill="#eab676"/>
+          <circle cx="84" cy="54" r="4.5" fill="#eab676"/>
+        </svg>
+
+        <!-- PATRON FRONT VIEW -->
+        <svg id="boss-svg-front" viewBox="0 0 120 120" width="100%" height="100%" style="display:none;">
+          <rect x="22" y="28" width="76" height="82" rx="14" fill="#1e293b" stroke="#0f172a" stroke-width="3"/>
+          <path d="M24 112 C24 76, 96 76, 96 112 Z" fill="#334155"/>
+          <polygon points="56,80 64,80 62,112 58,112" fill="#e11d48"/>
+          <circle cx="60" cy="52" r="23" fill="#eab676"/>
+          <path d="M37 47 C37 30, 83 30, 83 47" stroke="#1e293b" stroke-width="8" fill="none"/>
+          <line x1="44" y1="44" x2="56" y2="48" stroke="#0f172a" stroke-width="3.5" stroke-linecap="round"/>
+          <line x1="76" y1="44" x2="64" y2="48" stroke="#0f172a" stroke-width="3.5" stroke-linecap="round"/>
+          <rect x="42" y="48" width="14" height="9" rx="2" fill="#fff" stroke="#0f172a" stroke-width="2"/>
+          <rect x="64" y="48" width="14" height="9" rx="2" fill="#fff" stroke="#0f172a" stroke-width="2"/>
+          <line x1="56" y1="52" x2="64" y2="52" stroke="#0f172a" stroke-width="2"/>
+          <circle cx="49" cy="52.5" r="2.5" fill="#e11d48"/>
+          <circle cx="71" cy="52.5" r="2.5" fill="#e11d48"/>
+          <path d="M48 64 Q60 58 72 64" stroke="#1e293b" stroke-width="4" fill="none" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="boss-desk">
+        <div class="boss-nameplate">PATRON</div>
+      </div>
+    </div>
+
+    <!-- INTERACTIVE HAZARD: RINGING SALES PHONE -->
+    <button class="phone-hazard" id="phone-hazard">
+      <span>📞 MÜŞTERİ ARIYOR! AÇ (+3.5sn)</span>
+      <div class="phone-timer-bar" id="phone-timer-bar"></div>
+    </button>
+
+    <!-- COUPLE WORKSTATION -->
+    <div class="couple-area" id="couple-area">
+      <div class="shield-banner" id="shield-banner">🛡️ EXCEL RAPOR KALKANI AKTİF</div>
+      <div class="kiss-burst" id="kiss-burst">💋</div>
+
+      <div class="characters-row">
+        <!-- EDA -->
+        <div class="char-wrap char-eda">
+          <div class="char-label"><span id="eda-status-icon">💻</span> Eda</div>
+          <svg viewBox="0 0 120 145" width="118" height="142">
+            <!-- Long Dark Hair -->
+            <path d="M20 46 C10 78, 14 122, 26 134 C45 138, 75 138, 92 128 C100 105, 98 68, 90 46 Z" fill="#18181b"/>
+            <!-- Stylish Black Top (Like Photo 2 & 3) -->
+            <path d="M28 142 C28 96, 92 96, 92 142 Z" fill="#18181b"/>
+            <!-- Subtle Gold Necklace -->
+            <path d="M48 102 Q60 112 72 102" stroke="#fbbf24" stroke-width="2" fill="none"/>
+            <!-- Head -->
+            <circle cx="60" cy="66" r="25" fill="#f5d0b5"/>
+            <!-- Hair Bangs -->
+            <path d="M33 60 C34 32, 86 32, 87 60 C80 43, 45 43, 33 60 Z" fill="#18181b"/>
+            <!-- Eyebrows -->
+            <path d="M43 55 Q49 52 55 55" stroke="#18181b" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+            <path d="M65 55 Q71 52 77 55" stroke="#18181b" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+            <!-- Blush -->
+            <ellipse cx="46" cy="71" rx="5" ry="2.5" fill="#fb7185" opacity="0.55"/>
+            <ellipse cx="74" cy="71" rx="5" ry="2.5" fill="#fb7185" opacity="0.55"/>
+            <!-- Eyes -->
+            <g id="eda-eyes-open">
+              <circle cx="49" cy="63" r="3.3" fill="#18181b"/>
+              <circle cx="71" cy="63" r="3.3" fill="#18181b"/>
+              <circle cx="50" cy="61.8" r="1" fill="#fff"/>
+              <circle cx="72" cy="61.8" r="1" fill="#fff"/>
+            </g>
+            <g id="eda-eyes-kiss" style="display:none;">
+              <path d="M44 63 Q49 58 54 63" stroke="#18181b" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+              <path d="M66 63 Q71 58 76 63" stroke="#18181b" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+            </g>
+            <!-- Lips -->
+            <path id="eda-mouth-normal" d="M54 76 Q60 81 66 76" stroke="#e11d48" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+            <circle id="eda-mouth-kiss" cx="70" cy="75" r="4.2" fill="#e11d48" style="display:none;"/>
+          </svg>
+        </div>
+
+        <!-- AHMET -->
+        <div class="char-wrap char-ahmet">
+          <div class="char-label"><span id="ahmet-status-icon">💻</span> Ahmet</div>
+          <svg viewBox="0 0 120 145" width="118" height="142">
+            <!-- Smart Casual Dark Jacket / Polo -->
+            <path d="M28 142 C28 96, 92 96, 92 142 Z" fill="#27272a"/>
+            <polygon points="48,98 72,98 65,142 55,142" fill="#18181b"/>
+            <!-- Head -->
+            <circle cx="60" cy="66" r="25" fill="#ebbfa0"/>
+            <!-- Wavy Dark Hair -->
+            <path d="M33 59 C30 30, 90 28, 87 59 C82 42, 42 42, 33 59 Z" fill="#18181b"/>
+            <circle cx="48" cy="36" r="8" fill="#18181b"/>
+            <circle cx="62" cy="34" r="9" fill="#18181b"/>
+            <circle cx="74" cy="38" r="7.5" fill="#18181b"/>
+            <!-- Eyebrows -->
+            <path d="M42 55 Q49 52 55 55" stroke="#18181b" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+            <path d="M65 55 Q71 52 78 55" stroke="#18181b" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+            <!-- Beard & Mustache -->
+            <path d="M36 68 C37 95, 83 95, 84 68 C81 85, 39 85, 36 68 Z" fill="#18181b" opacity="0.85"/>
+            <path d="M49 73 Q60 69 71 73" stroke="#18181b" stroke-width="3" fill="none" stroke-linecap="round"/>
+            <!-- Eyes -->
+            <g id="ahmet-eyes-open">
+              <circle cx="49" cy="62" r="3.3" fill="#18181b"/>
+              <circle cx="71" cy="62" r="3.3" fill="#18181b"/>
+              <circle cx="48" cy="60.8" r="1" fill="#fff"/>
+              <circle cx="70" cy="60.8" r="1" fill="#fff"/>
+            </g>
+            <g id="ahmet-eyes-kiss" style="display:none;">
+              <path d="M44 62 Q49 57 54 62" stroke="#18181b" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+              <path d="M66 62 Q71 57 76 62" stroke="#18181b" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+            </g>
+            <!-- Mouth -->
+            <path id="ahmet-mouth-normal" d="M54 76 Q60 80 66 76" stroke="#e11d48" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+            <circle id="ahmet-mouth-kiss" cx="50" cy="75" r="4.2" fill="#e11d48" style="display:none;"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Shared Sales Desk -->
+      <div class="main-desk">
+        <div class="laptop left-laptop">📊<div class="laptop-base"></div></div>
+        <div class="desk-badge">SATIŞ MASASI</div>
+        <div class="laptop right-laptop">📈<div class="laptop-base"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM CONTROLS & POWER-UPS -->
+  <div class="controls">
+    <div class="powerups-row">
+      <button class="power-btn" id="pwr-coffee" title="Patrona kahve ısmarla, 4.5 sn arkası dönük kalsın!">
+        <span>☕ Kahve İkramı</span>
+        <span class="power-count" id="pwr-coffee-cnt">Patronu Oyala (1)</span>
+      </button>
+      <button class="power-btn" id="pwr-shield" title="Sahte Excel raporu aç, 1 yakalanmayı engeller ve barı korur!">
+        <span>📊 Rapor Kalkanı</span>
+        <span class="power-count" id="pwr-shield-cnt">1 Kez Korur (1)</span>
+      </button>
+      <button class="power-btn" id="pwr-boost" title="5 saniye boyunca 2x hızlı bar doldurur!">
+        <span>🎂 2x Aşk Enerjisi</span>
+        <span class="power-count" id="pwr-boost-cnt">2x Hız (1)</span>
+      </button>
+    </div>
+
+    <button class="kiss-btn" id="kiss-btn">
+      💋 ÖPÜŞMEK İÇİN BASILI TUT
+    </button>
+    <div class="hint-text" id="bottom-hint">Patron dönmeden parmağını çekersen "Son Anda!" bonusu alırsın!</div>
+  </div>
+
+  <!-- 1. START / COMPETITIVE LOBBY MODAL -->
+  <div class="overlay" id="start-overlay">
+    <div class="modal-card">
+      <div class="modal-photo">
+        <img src="foto1.jpg" alt="Eda & Ahmet" />
+      </div>
+      <div class="modal-tag">Eda vs Ahmet • Doğum Günü Özel</div>
+      <h1 class="modal-title">Ofiste Gizli Kaçamak 💋</h1>
+      <p class="modal-text">
+        Satış ofisinde patrona yakalanmadan 4 katı kim daha yüksek skorla bitirecek? Jokerleri kullanın, telefonlara yetişin ve rekoru kırın!
+      </p>
+
+      <div class="player-select-group">
+        <button class="player-option selected" id="select-eda">👩 Eda Oynuyor</button>
+        <button class="player-option" id="select-ahmet">👨 Ahmet Oynuyor</button>
+      </div>
+
+      <div class="duel-board">
+        <div class="duel-col">
+          <span class="duel-name">Eda Rekor</span>
+          <span class="duel-score" id="lobby-eda-score">0</span>
+        </div>
+        <div style="color:#475569; font-weight:800;">VS</div>
+        <div class="duel-col">
+          <span class="duel-name">Ahmet Rekor</span>
+          <span class="duel-score" id="lobby-ahmet-score">0</span>
+        </div>
+      </div>
+
+      <button class="action-btn" id="start-btn">OYUNA BAŞLA 🚀</button>
+      <button class="secondary-btn" id="lobby-qr-btn">📱 QR Kodu Göster (Telefondan Oyna)</button>
+    </div>
+  </div>
+
+  <!-- 2. PAUSE MODAL -->
+  <div class="overlay hidden" id="pause-overlay">
+    <div class="modal-card">
+      <h2 class="modal-title">Oyun Duraklatıldı ⏸️</h2>
+      <p class="modal-text">Hazır olduğunda kaldığın yerden devam edebilir veya oyuncuyu değiştirebilirsin.</p>
+      <button class="action-btn" id="resume-btn">DEVAM ET ▶️</button>
+      <button class="secondary-btn" id="switch-player-btn">Oyuncu Değiştir / Ana Menü</button>
+    </div>
+  </div>
+
+  <!-- 3. LEVEL COMPLETE + KISS PENALTY MODAL -->
+  <div class="overlay hidden" id="level-overlay">
+    <div class="modal-card">
+      <div class="modal-photo">
+        <img id="level-modal-img" src="foto2.jpg" alt="Eda & Ahmet" />
+      </div>
+      <div class="modal-tag" id="level-tag">Seviye Geçildi</div>
+      <h2 class="modal-title" id="level-modal-title">1. Seviye Tamamlandı!</h2>
+      <p class="modal-text" id="level-modal-desc"></p>
+
+      <div class="kiss-toll-box">
+        <div class="kiss-toll-title">🔥 ÜST KATA GEÇİŞ ŞARTI</div>
+        <div class="kiss-toll-desc" id="kiss-toll-desc"></div>
+        <div class="kiss-check-row" id="kiss-check-row"></div>
+      </div>
+
+      <button class="action-btn" id="next-level-btn" disabled>Önce Öpücükleri Tamamla</button>
+    </div>
+  </div>
+
+  <!-- 4. GAME OVER MODAL (COMPETITIVE SWITCH OR CONTINUE LEVEL) -->
+  <div class="overlay hidden" id="gameover-overlay">
+    <div class="modal-card">
+      <div class="modal-photo">
+        <img src="foto3.jpg" alt="Eda & Ahmet" />
+      </div>
+      <div class="modal-tag">Mesaiye Yakalandın</div>
+      <h2 class="modal-title" id="gameover-title">Patron Yakaladı!</h2>
+      <p class="modal-text" id="gameover-desc"></p>
+
+      <div class="duel-board">
+        <div class="duel-col">
+          <span class="duel-name">Eda Rekor</span>
+          <span class="duel-score" id="over-eda-score">0</span>
+        </div>
+        <div style="color:#475569; font-weight:800;">VS</div>
+        <div class="duel-col">
+          <span class="duel-name">Ahmet Rekor</span>
+          <span class="duel-score" id="over-ahmet-score">0</span>
+        </div>
+      </div>
+
+      <button class="action-btn" id="retry-level-btn">⚡ Bu Kattan Devam Et</button>
+      <button class="secondary-btn" id="pass-turn-btn">Sırayı Diğerine Ver 🔄</button>
+      <button class="secondary-btn" id="retry-same-btn">1. Kattan Sıfırdan Başla</button>
+    </div>
+  </div>
+
+  <!-- 5. VICTORY & BIRTHDAY MODAL -->
+  <div class="overlay hidden" id="victory-overlay">
+    <div class="modal-card">
+      <div class="photo-grid">
+        <img src="foto1.jpg" alt="1" />
+        <img src="foto2.jpg" alt="2" />
+        <img src="foto3.jpg" alt="3" />
+      </div>
+      <div class="modal-tag">🏆 Ofisin Şampiyon Çifti</div>
+      <h2 class="modal-title">İyi Ki Doğdun Eda! 🎂❤️</h2>
+      <p class="modal-text" id="victory-text">
+        Aynı iş yerinde, satış ekibinde patronlardan gizli kaçamak yaptığımız o heyecanlı günlerden bugünlere... Seninle geçen her günümüz en güzel rekor. Doğum günün kutlu olsun sevgilim!
+      </p>
+
+      <div class="duel-board">
+        <div class="duel-col">
+          <span class="duel-name">Eda Rekor</span>
+          <span class="duel-score" id="win-eda-score">0</span>
+        </div>
+        <div style="color:#475569; font-weight:800;">VS</div>
+        <div class="duel-col">
+          <span class="duel-name">Ahmet Rekor</span>
+          <span class="duel-score" id="win-ahmet-score">0</span>
+        </div>
+      </div>
+
+      <button class="action-btn" id="play-again-btn">Yeni Rekabet Başlat 🔄</button>
+    </div>
+  </div>
+
+  <!-- 6. QR CODE SHARE MODAL -->
+  <div class="overlay hidden" id="qr-overlay">
+    <div class="modal-card">
+      <div class="modal-tag">Hemen Telefondan Oynayın</div>
+      <h2 class="modal-title">QR Kodu Okut 📱</h2>
+      <p class="modal-text">
+        Kameranı açıp aşağıdaki QR kodu okutarak oyunu kendi telefonunda anında açabilirsin!
+      </p>
+      <div class="qr-box">
+        <img id="qr-img" src="" alt="Oyun QR Kodu" />
+      </div>
+      <p class="modal-text" id="qr-url-label" style="font-size:0.74rem; color:#94a3b8; word-break:break-all; margin-bottom:12px;"></p>
+      <button class="action-btn" id="copy-link-btn">🔗 Oyun Linkini Kopyala</button>
+      <button class="secondary-btn" id="close-qr-btn">Kapat</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // --- AUDIO & HAPTICS ---
+  class SoundFX {
+    constructor() {
+      this.ctx = null;
+      this.muted = false;
+    }
+    init() {
+      if (!this.ctx) {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (AudioCtx) this.ctx = new AudioCtx();
+      }
+      if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
+    }
+    vibrate(ms) {
+      if (navigator.vibrate) {
+        try { navigator.vibrate(ms); } catch (_) {}
+      }
+    }
+    playTone(freq, type, duration, vol = 0.1) {
+      if (this.muted || !this.ctx) return;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+      gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start();
+      osc.stop(this.ctx.currentTime + duration);
+    }
+    kissPop(combo = 1) {
+      this.playTone(480 + Math.min(420, combo * 70), 'sine', 0.08, 0.08);
+    }
+    dodgeChime() {
+      this.playTone(660, 'sine', 0.1, 0.12);
+      setTimeout(() => this.playTone(990, 'sine', 0.15, 0.14), 70);
+    }
+    powerupChime() {
+      [587, 784, 1046].forEach((n, i) =>
+        setTimeout(() => this.playTone(n, 'triangle', 0.13, 0.13), i * 65)
+      );
+    }
+    phoneRing() {
+      this.playTone(880, 'square', 0.08, 0.11);
+      setTimeout(() => this.playTone(1046, 'square', 0.08, 0.11), 90);
+    }
+    warnBeep() {
+      this.playTone(720, 'triangle', 0.12, 0.13);
+    }
+    caughtBuzzer() {
+      this.vibrate([120, 60, 180]);
+      this.playTone(145, 'sawtooth', 0.35, 0.17);
+      setTimeout(() => this.playTone(108, 'sawtooth', 0.38, 0.17), 110);
+    }
+    levelWin() {
+      this.vibrate([60, 40, 120]);
+      [523, 659, 784, 1046].forEach((n, i) =>
+        setTimeout(() => this.playTone(n, 'sine', 0.22, 0.14), i * 95)
+      );
+    }
+  }
+
+  const sfx = new SoundFX();
+
+  // --- DOM REFERENCES ---
+  const hudPlayerName = document.getElementById('hud-player-name');
+  const hudEdaBest = document.getElementById('hud-eda-best');
+  const hudAhmetBest = document.getElementById('hud-ahmet-best');
+  const levelBadge = document.getElementById('level-badge');
+  const timerBox = document.getElementById('timer-box');
+  const timeVal = document.getElementById('time-val');
+  const comboBadge = document.getElementById('combo-badge');
+  const scoreVal = document.getElementById('score-val');
+  const livesDisplay = document.getElementById('lives-display');
+  const progressFill = document.getElementById('progress-fill');
+  const stageHazardLabel = document.getElementById('stage-hazard-label');
+  const progressPct = document.getElementById('progress-pct');
+  const wallPhoto = document.getElementById('wall-photo');
+
+  const bossAlert = document.getElementById('boss-alert');
+  const bossAlertText = document.getElementById('boss-alert-text');
+  const warnTimerBar = document.getElementById('warn-timer-bar');
+  const bossChar = document.getElementById('boss-char');
+  const bossSvgBack = document.getElementById('boss-svg-back');
+  const bossSvgFront = document.getElementById('boss-svg-front');
+  const visionCone = document.getElementById('vision-cone');
+  const phoneHazard = document.getElementById('phone-hazard');
+  const phoneTimerBar = document.getElementById('phone-timer-bar');
+
+  const coupleArea = document.getElementById('couple-area');
+  const shieldBanner = document.getElementById('shield-banner');
+  const sceneArea = document.getElementById('scene-area');
+  const kissBtn = document.getElementById('kiss-btn');
+
+  const edaStatusIcon = document.getElementById('eda-status-icon');
+  const ahmetStatusIcon = document.getElementById('ahmet-status-icon');
+
+  const edaEyesOpen = document.getElementById('eda-eyes-open');
+  const edaEyesKiss = document.getElementById('eda-eyes-kiss');
+  const edaMouthNormal = document.getElementById('eda-mouth-normal');
+  const edaMouthKiss = document.getElementById('eda-mouth-kiss');
+
+  const ahmetEyesOpen = document.getElementById('ahmet-eyes-open');
+  const ahmetEyesKiss = document.getElementById('ahmet-eyes-kiss');
+  const ahmetMouthNormal = document.getElementById('ahmet-mouth-normal');
+  const ahmetMouthKiss = document.getElementById('ahmet-mouth-kiss');
+
+  const pwrCoffeeBtn = document.getElementById('pwr-coffee');
+  const pwrShieldBtn = document.getElementById('pwr-shield');
+  const pwrBoostBtn = document.getElementById('pwr-boost');
+  const pwrCoffeeCnt = document.getElementById('pwr-coffee-cnt');
+  const pwrShieldCnt = document.getElementById('pwr-shield-cnt');
+  const pwrBoostCnt = document.getElementById('pwr-boost-cnt');
+
+  const caughtFlash = document.getElementById('caught-flash');
+  const caughtToast = document.getElementById('caught-toast');
+
+  const startOverlay = document.getElementById('start-overlay');
+  const pauseOverlay = document.getElementById('pause-overlay');
+  const levelOverlay = document.getElementById('level-overlay');
+  const gameoverOverlay = document.getElementById('gameover-overlay');
+  const victoryOverlay = document.getElementById('victory-overlay');
+  const qrOverlay = document.getElementById('qr-overlay');
+
+  // --- COMPETITIVE STATE ---
+  let currentPlayer = 'Eda'; // 'Eda' or 'Ahmet'
+  let bestScores = {
+    Eda: parseInt(localStorage.getItem('eda_best_score') || '0', 10),
+    Ahmet: parseInt(localStorage.getItem('ahmet_best_score') || '0', 10)
+  };
+
+  let gameState = 'MENU';
+  let level = 1;
+  const maxLevels = 4;
+  let score = 0;
+  let lives = 3;
+  let progress = 0;
+  let timeLeft = 38;
+  let isKissing = false;
+  let kissHoldDuration = 0;
+  let comboMultiplier = 1.0;
+
+  let bossState = 'WORKING'; // WORKING, WARNING, LOOKING, COFFEE
+  let bossTimer = 0;
+  let bossPhaseTotal = 1;
+  let lookGraceTimer = 0; // 0.18s fairness buffer when boss first turns
+  let caughtCooldown = false;
+  let innocentTickTimer = 0;
+
+  // Power-Up States
+  let powerCharges = { coffee: 1, shield: 1, boost: 1 };
+  let shieldActive = false;
+  let boostTimer = 0;
+
+  // Phone Hazard State
+  let phoneRinging = false;
+  let phoneSpawnTimer = 0;
+  let phoneFailTimer = 0;
+  const PHONE_MAX_TIME = 3.4;
+
+  // Floating Bonus Collectible
+  let bonusSpawnTimer = 4.5;
+  let activeBonusEl = null;
+
+  let lastFrameTime = performance.now();
+  let particleTimer = 0;
+
+  // PLAYABLE, FUN, SKILL-BASED LEVEL CONFIGURATIONS
+  const LEVEL_CONFIG = {
+    1: {
+      name: '1. Kat: Satış Ofisi',
+      hazardDesc: 'Isınma Turu + Rahat Patron',
+      timeLimit: 38,
+      fillSpeed: 23.5,
+      decayRate: 2.2,
+      workMin: 1.8,
+      workMax: 3.1,
+      warnTime: 0.95,
+      lookMin: 1.1,
+      lookMax: 1.8,
+      fakeoutChance: 0.15,
+      doubleLookChance: 0.0,
+      phoneEnabled: false,
+      kissPenaltyCount: 2
+    },
+    2: {
+      name: '2. Kat: Müşteri Hattı',
+      hazardDesc: 'Çalan Telefonlar (+Süre Verir)',
+      timeLimit: 36,
+      fillSpeed: 21.5,
+      decayRate: 3.2,
+      workMin: 1.4,
+      workMax: 2.6,
+      warnTime: 0.80,
+      lookMin: 1.1,
+      lookMax: 1.9,
+      fakeoutChance: 0.22,
+      doubleLookChance: 0.18,
+      phoneEnabled: true,
+      phoneIntervalMin: 6.5,
+      phoneIntervalMax: 10.0,
+      kissPenaltyCount: 3
+    },
+    3: {
+      name: '3. Kat: Ay Sonu Hedefi',
+      hazardDesc: 'Şüpheci Patron + Çift Bakış',
+      timeLimit: 34,
+      fillSpeed: 20.5,
+      decayRate: 4.2,
+      workMin: 1.1,
+      workMax: 2.2,
+      warnTime: 0.68,
+      lookMin: 1.1,
+      lookMax: 2.0,
+      fakeoutChance: 0.25,
+      doubleLookChance: 0.30,
+      phoneEnabled: true,
+      phoneIntervalMin: 5.5,
+      phoneIntervalMax: 8.5,
+      kissPenaltyCount: 4
+    },
+    4: {
+      name: '4. Kat: Büyük Doğum Günü Finali',
+      hazardDesc: 'Maksimum Heyecan + Joker Desteği',
+      timeLimit: 33,
+      fillSpeed: 20.0,
+      decayRate: 5.0,
+      workMin: 0.95,
+      workMax: 1.9,
+      warnTime: 0.58,
+      lookMin: 1.2,
+      lookMax: 2.0,
+      fakeoutChance: 0.28,
+      doubleLookChance: 0.38,
+      phoneEnabled: true,
+      phoneIntervalMin: 4.8,
+      phoneIntervalMax: 7.8,
+      kissPenaltyCount: 5
+    }
+  };
+
+  const PHOTOS = ['foto1.jpg', 'foto2.jpg', 'foto3.jpg'];
+  const BOSS_WARN_LINES = ['❗ DÖNÜYOR!', '❗ SES Mİ GELDİ?', '❗ ŞÜPHELENDİ!', '❗ ARKAYA BAKACAK!'];
+  const BOSS_WORK_QUOTES = ['📊 Hedefler nasıl?', '💼 Raporları bekliyorum', '📈 Satışları artıralım'];
+
+  function randBetween(min, max) {
+    return min + Math.random() * (max - min);
+  }
+
+  function saveBestScore() {
+    const rounded = Math.floor(score);
+    if (rounded > bestScores[currentPlayer]) {
+      bestScores[currentPlayer] = rounded;
+      localStorage.setItem(
+        currentPlayer === 'Eda' ? 'eda_best_score' : 'ahmet_best_score',
+        String(rounded)
+      );
+    }
+    updateScoreboards();
+  }
+
+  function updateScoreboards() {
+    hudEdaBest.textContent = bestScores.Eda;
+    hudAhmetBest.textContent = bestScores.Ahmet;
+
+    ['lobby', 'over', 'win'].forEach((prefix) => {
+      const edaEl = document.getElementById(`${prefix}-eda-score`);
+      const ahmetEl = document.getElementById(`${prefix}-ahmet-score`);
+      if (edaEl && ahmetEl) {
+        edaEl.textContent = bestScores.Eda;
+        ahmetEl.textContent = bestScores.Ahmet;
+        edaEl.classList.toggle('leader', bestScores.Eda > bestScores.Ahmet);
+        ahmetEl.classList.toggle('leader', bestScores.Ahmet > bestScores.Eda);
+      }
+    });
+  }
+
+  function selectPlayer(name) {
+    currentPlayer = name;
+    hudPlayerName.textContent = name;
+    document.getElementById('select-eda').classList.toggle('selected', name === 'Eda');
+    document.getElementById('select-ahmet').classList.toggle('selected', name === 'Ahmet');
+  }
+
+  document.getElementById('select-eda').addEventListener('click', () => selectPlayer('Eda'));
+  document.getElementById('select-ahmet').addEventListener('click', () => selectPlayer('Ahmet'));
+
+  // Tap wall photo to cycle photos anytime
+  let wallPhotoIdx = 0;
+  document.getElementById('wall-frame-card').addEventListener('click', () => {
+    wallPhotoIdx = (wallPhotoIdx + 1) % PHOTOS.length;
+    wallPhoto.src = PHOTOS[wallPhotoIdx];
+  });
+
+  function setBossVisuals(state, customAlert = '') {
+    bossState = state;
+    bossChar.classList.remove('warning');
+    bossAlert.className = 'boss-alert';
+    visionCone.className = 'vision-cone';
+
+    if (state === 'WORKING') {
+      bossSvgBack.style.display = 'block';
+      bossSvgFront.style.display = 'none';
+      if (Math.random() < 0.45) {
+        bossAlertText.textContent = BOSS_WORK_QUOTES[Math.floor(Math.random() * BOSS_WORK_QUOTES.length)];
+        bossAlert.classList.add('show-calm');
+      }
+    } else if (state === 'COFFEE') {
+      bossSvgBack.style.display = 'block';
+      bossSvgFront.style.display = 'none';
+      bossAlertText.textContent = customAlert || '☕ KAHVE KEYFİ (GÜVENLİ)';
+      bossAlert.classList.add('show-coffee');
+    } else if (state === 'WARNING') {
+      bossSvgBack.style.display = 'block';
+      bossSvgFront.style.display = 'none';
+      bossChar.classList.add('warning');
+      bossAlertText.textContent = BOSS_WARN_LINES[Math.floor(Math.random() * BOSS_WARN_LINES.length)];
+      bossAlert.classList.add('show-warn');
+      warnTimerBar.style.transform = 'scaleX(1)';
+      sfx.warnBeep();
+    } else if (state === 'LOOKING') {
+      bossSvgBack.style.display = 'none';
+      bossSvgFront.style.display = 'block';
+      bossAlertText.textContent = '👀 PATRON BAKIYOR!';
+      bossAlert.classList.add('show-danger');
+      visionCone.classList.add(isKissing ? 'active' : 'safe-look');
+      lookGraceTimer = 0.18; // 180ms human reaction buffer
+    }
+  }
+
+  function setKissingVisuals(active) {
+    // Check if player just released during WARNING -> Close Call Dodge Bonus!
+    if (isKissing && !active && bossState === 'WARNING' && gameState === 'PLAYING') {
+      score += 75;
+      sfx.dodgeChime();
+      spawnFloatingText('⚡ SON ANDA KAÇIŞ! +75');
+    }
+
+    isKissing = active;
+    if (!active) {
+      kissHoldDuration = 0;
+      comboMultiplier = 1.0;
+      comboBadge.classList.remove('active');
+      progressFill.classList.remove('risk-boost');
+    }
+
+    coupleArea.classList.toggle('kissing', active);
+    kissBtn.classList.toggle('pressed', active);
+
+    edaStatusIcon.textContent = active ? '❤️' : (bossState === 'LOOKING' ? '😇' : '💻');
+    ahmetStatusIcon.textContent = active ? '❤️' : (bossState === 'LOOKING' ? '😇' : '💻');
+
+    edaEyesOpen.style.display = active ? 'none' : 'block';
+    edaEyesKiss.style.display = active ? 'block' : 'none';
+    edaMouthNormal.style.display = active ? 'none' : 'block';
+    edaMouthKiss.style.display = active ? 'block' : 'none';
+
+    ahmetEyesOpen.style.display = active ? 'none' : 'block';
+    ahmetEyesKiss.style.display = active ? 'block' : 'none';
+    ahmetMouthNormal.style.display = active ? 'none' : 'block';
+    ahmetMouthKiss.style.display = active ? 'block' : 'none';
+  }
+
+  // --- POWER-UPS ---
+  function updatePowerupButtons() {
+    pwrCoffeeBtn.disabled = powerCharges.coffee <= 0 || bossState === 'COFFEE';
+    pwrCoffeeCnt.textContent = powerCharges.coffee > 0 ? `Patronu Oyala (${powerCharges.coffee})` : 'Tükendi';
+    pwrCoffeeBtn.classList.toggle('active-buff', bossState === 'COFFEE');
+
+    pwrShieldBtn.disabled = powerCharges.shield <= 0 || shieldActive;
+    pwrShieldCnt.textContent = shieldActive ? 'Kalkan Açık!' : (powerCharges.shield > 0 ? `Koruma (${powerCharges.shield})` : 'Tükendi');
+    pwrShieldBtn.classList.toggle('active-buff', shieldActive);
+    shieldBanner.classList.toggle('active', shieldActive);
+
+    pwrBoostBtn.disabled = powerCharges.boost <= 0 || boostTimer > 0;
+    pwrBoostCnt.textContent = boostTimer > 0 ? `${boostTimer.toFixed(1)}sn 2x!` : (powerCharges.boost > 0 ? `2x Hız (${powerCharges.boost})` : 'Tükendi');
+    pwrBoostBtn.classList.toggle('active-buff', boostTimer > 0);
+    progressFill.classList.toggle('hyper-boost', boostTimer > 0);
+  }
+
+  pwrCoffeeBtn.addEventListener('pointerdown', (e) => {
+    e.stopPropagation();
+    if (gameState !== 'PLAYING' || powerCharges.coffee <= 0 || bossState === 'COFFEE') return;
+    sfx.init();
+    sfx.powerupChime();
+    powerCharges.coffee--;
+    setBossVisuals('COFFEE', '☕ KAHVE MOLASI (4.5sn)');
+    bossTimer = 4.5;
+    bossPhaseTotal = 4.5;
+    spawnFloatingText('☕ PATRON KAHVEDE!');
+    updatePowerupButtons();
+  });
+
+  pwrShieldBtn.addEventListener('pointerdown', (e) => {
+    e.stopPropagation();
+    if (gameState !== 'PLAYING' || powerCharges.shield <= 0 || shieldActive) return;
+    sfx.init();
+    sfx.powerupChime();
+    powerCharges.shield--;
+    shieldActive = true;
+    spawnFloatingText('🛡️ RAPOR KALKANI AÇILDI!');
+    updatePowerupButtons();
+  });
+
+  pwrBoostBtn.addEventListener('pointerdown', (e) => {
+    e.stopPropagation();
+    if (gameState !== 'PLAYING' || powerCharges.boost <= 0 || boostTimer > 0) return;
+    sfx.init();
+    sfx.powerupChime();
+    powerCharges.boost--;
+    boostTimer = 5.0;
+    spawnFloatingText('🎂 2x AŞK ENERJİSİ!');
+    updatePowerupButtons();
+  });
+
+  // --- FLOATING BONUS COLLECTIBLES ---
+  const BONUS_TYPES = [
+    { label: '🎂 Pasta +4sn', time: 4, score: 50, prog: 0 },
+    { label: '💎 Prim +120 Puan', time: 0, score: 120, prog: 5 },
+    { label: '💖 Hediye +%12 Bar', time: 1.5, score: 60, prog: 12 }
+  ];
+
+  function clearFloatingBonus() {
+    if (activeBonusEl) {
+      activeBonusEl.remove();
+      activeBonusEl = null;
+    }
+  }
+
+  function spawnFloatingBonus() {
+    clearFloatingBonus();
+    const item = BONUS_TYPES[Math.floor(Math.random() * BONUS_TYPES.length)];
+    const btn = document.createElement('button');
+    btn.className = 'floating-bonus';
+    btn.textContent = item.label;
+    btn.style.left = `${14 + Math.random() * 52}%`;
+    btn.style.top = `${36 + Math.random() * 22}%`;
+
+    btn.addEventListener('pointerdown', (e) => {
+      e.stopPropagation();
+      sfx.init();
+      sfx.dodgeChime();
+      timeLeft += item.time;
+      score += item.score;
+      progress = Math.min(100, progress + item.prog);
+      spawnFloatingText(`✨ ${item.label}`);
+      clearFloatingBonus();
+      updateHUD();
+    });
+
+    sceneArea.appendChild(btn);
+    activeBonusEl = btn;
+    setTimeout(() => {
+      if (activeBonusEl === btn) clearFloatingBonus();
+    }, 4200);
+  }
+
+  // --- PHONE HAZARD ---
+  function stopPhoneHazard() {
+    phoneRinging = false;
+    phoneHazard.classList.remove('active');
+    const cfg = LEVEL_CONFIG[level];
+    if (cfg.phoneEnabled) {
+      phoneSpawnTimer = randBetween(cfg.phoneIntervalMin, cfg.phoneIntervalMax);
+    }
+  }
+
+  phoneHazard.addEventListener('pointerdown', (e) => {
+    e.stopPropagation();
+    if (!phoneRinging) return;
+    sfx.init();
+    sfx.dodgeChime();
+    score += 60;
+    timeLeft += 3.5;
+    spawnFloatingText('📞 +60 Puan & +3.5sn!');
+    stopPhoneHazard();
+    updateHUD();
+  });
+
+  function updateHUD() {
+    levelBadge.textContent = `Kat ${level}/${maxLevels}`;
+    timeVal.textContent = Math.max(0, timeLeft).toFixed(1);
+    timerBox.classList.toggle('urgent', timeLeft <= 8);
+    scoreVal.textContent = Math.floor(score);
+    livesDisplay.textContent = '❤️'.repeat(lives) + '🖤'.repeat(Math.max(0, 3 - lives));
+
+    const pct = Math.min(100, Math.max(0, Math.floor(progress)));
+    progressFill.style.width = `${pct}%`;
+    progressPct.textContent = `%${pct}`;
+  }
+
+  function spawnFloatingText(text) {
+    const el = document.createElement('div');
+    el.className = 'particle';
+    el.textContent = text;
+    el.style.left = `${36 + (Math.random() * 24 - 12)}%`;
+    el.style.top = `${48 + (Math.random() * 10 - 5)}%`;
+    sceneArea.appendChild(el);
+    setTimeout(() => el.remove(), 900);
+  }
+
+  function triggerPenalty(reasonText) {
+    if (caughtCooldown) return;
+
+    // Check if Excel Shield is active!
+    if (shieldActive) {
+      shieldActive = false;
+      setKissingVisuals(false);
+      sfx.dodgeChime();
+      spawnFloatingText('🛡️ KALKAN PATRONU SAVUŞTURDU!');
+      setBossVisuals('WORKING');
+      const cfg = LEVEL_CONFIG[level];
+      bossTimer = randBetween(cfg.workMin, cfg.workMax);
+      updatePowerupButtons();
+      return;
+    }
+
+    caughtCooldown = true;
+    setKissingVisuals(false);
+    stopPhoneHazard();
+    coupleArea.classList.add('caught');
+    sfx.caughtBuzzer();
+
+    lives--;
+    progress = Math.max(0, progress - 15);
+    saveBestScore();
+    updateHUD();
+
+    caughtToast.textContent = reasonText;
+    caughtFlash.classList.add('active');
+    caughtToast.classList.add('show');
+
+    setTimeout(() => {
+      caughtFlash.classList.remove('active');
+      caughtToast.classList.remove('show');
+      coupleArea.classList.remove('caught');
+
+      if (lives <= 0) {
+        triggerGameOver('3 kere yakalandın! Aynı kattan devam edebilir veya sırayı devredebilirsin.');
+      } else {
+        setBossVisuals('WORKING');
+        const cfg = LEVEL_CONFIG[level];
+        bossTimer = randBetween(cfg.workMin, cfg.workMax);
+        caughtCooldown = false;
+      }
+    }, 1100);
+  }
+
+  function triggerGameOver(reason) {
+    gameState = 'PAUSED';
+    setKissingVisuals(false);
+    stopPhoneHazard();
+    clearFloatingBonus();
+    saveBestScore();
+
+    const otherPlayer = currentPlayer === 'Eda' ? 'Ahmet' : 'Eda';
+    document.getElementById('gameover-title').textContent = `${currentPlayer} Yakalandı!`;
+    document.getElementById('gameover-desc').innerHTML =
+      `${reason}<br><br><b>${currentPlayer} Skoru: ${Math.floor(score)}</b>. İstersen <b>${level}. Kattan</b> hemen devam et, istersen telefonu <b>${otherPlayer}</b> alsın!`;
+    document.getElementById('retry-level-btn').textContent = `⚡ ${level}. Kattan Devam Et`;
+    document.getElementById('pass-turn-btn').textContent = `Sırayı ${otherPlayer}'a Ver 🔄`;
+    gameoverOverlay.classList.remove('hidden');
+  }
+
+  function setupLevelClearModal(lvl) {
+    const cfg = LEVEL_CONFIG[lvl];
+    const nextCfg = LEVEL_CONFIG[lvl + 1];
+    const needed = cfg.kissPenaltyCount;
+    let doneCount = 0;
+
+    document.getElementById('level-modal-img').src = PHOTOS[lvl % PHOTOS.length];
+    document.getElementById('level-tag').textContent = `${lvl}. Kat Bitti • +${Math.floor(timeLeft * 15)} Süre Bonusu`;
+    document.getElementById('level-modal-title').textContent = `${cfg.name} Geçildi!`;
+    document.getElementById('level-modal-desc').innerHTML =
+      `Sonraki Kat: <b>${nextCfg.name}</b><br>Özellik: <b>${nextCfg.hazardDesc}</b>`;
+
+    const partnerName = currentPlayer === 'Eda' ? 'Ahmet' : 'Eda';
+    document.getElementById('kiss-toll-desc').innerHTML =
+      `Üst kata geçmek için şu an gerçekte <b>${partnerName} ile ${needed} kere öpüşmek zorundasın!</b> Her öpücükte kutucuğa dokun:`;
+
+    const row = document.getElementById('kiss-check-row');
+    const nextBtn = document.getElementById('next-level-btn');
+    row.innerHTML = '';
+    nextBtn.disabled = true;
+    nextBtn.textContent = `🔒 Önce ${needed} Kere Öpüşün`;
+
+    for (let i = 1; i <= needed; i++) {
+      const btn = document.createElement('button');
+      btn.className = 'kiss-token-btn';
+      btn.textContent = `💋 ${i}. Öpücük`;
+      btn.addEventListener('click', () => {
+        if (btn.classList.contains('done')) return;
+        btn.classList.add('done');
+        btn.textContent = `✅ ${i}`;
+        sfx.init();
+        sfx.playTone(660 + i * 90, 'sine', 0.14, 0.15);
+        doneCount++;
+        if (doneCount >= needed) {
+          nextBtn.disabled = false;
+          nextBtn.textContent = `${lvl + 1}. KATA GEÇ 🚀`;
+        } else {
+          nextBtn.textContent = `🔒 ${needed - doneCount} Öpücük Kaldı`;
+        }
+      });
+      row.appendChild(btn);
+    }
+  }
+
+  function handleLevelComplete() {
+    gameState = 'PAUSED';
+    setKissingVisuals(false);
+    stopPhoneHazard();
+    clearFloatingBonus();
+
+    score += Math.floor(timeLeft * 15);
+    saveBestScore();
+    updateHUD();
+
+    if (level < maxLevels) {
+      sfx.levelWin();
+      setupLevelClearModal(level);
+      levelOverlay.classList.remove('hidden');
+    } else {
+      sfx.levelWin();
+      startConfetti();
+      victoryOverlay.classList.remove('hidden');
+    }
+  }
+
+  function startLevel(lvl, fullReset = false) {
+    level = lvl;
+    progress = 0;
+    caughtCooldown = false;
+    const cfg = LEVEL_CONFIG[level];
+    timeLeft = cfg.timeLimit;
+
+    if (fullReset) {
+      score = 0;
+      lives = 3;
+    } else if (lives <= 0) {
+      lives = 3;
+    }
+
+    // Replenish tactical office power-ups each level!
+    powerCharges = {
+      coffee: level >= 3 ? 2 : 1,
+      shield: 1,
+      boost: level >= 2 ? 2 : 1
+    };
+    shieldActive = false;
+    boostTimer = 0;
+    bonusSpawnTimer = randBetween(4.0, 6.5);
+    clearFloatingBonus();
+
+    wallPhoto.src = PHOTOS[(level - 1) % PHOTOS.length];
+    stageHazardLabel.textContent = `${cfg.name.toUpperCase()}`;
+    setKissingVisuals(false);
+    setBossVisuals('WORKING');
+    stopPhoneHazard();
+    bossTimer = randBetween(cfg.workMin, cfg.workMax);
+    bossPhaseTotal = bossTimer;
+    updatePowerupButtons();
+    updateHUD();
+    gameState = 'PLAYING';
+  }
+
+  // --- MAIN LOOP ---
+  function gameLoop(now) {
+    const dt = Math.min(0.1, (now - lastFrameTime) / 1000);
+    lastFrameTime = now;
+
+    if (gameState === 'PLAYING' && !caughtCooldown) {
+      const cfg = LEVEL_CONFIG[level];
+
+      // 1. Level Countdown Timer
+      timeLeft -= dt;
+      if (timeLeft <= 0) {
+        timeLeft = 0;
+        updateHUD();
+        triggerGameOver('Süre bitti! Mesai saati doldu.');
+        requestAnimationFrame(gameLoop);
+        return;
+      }
+
+      // 2. Boost Timer
+      if (boostTimer > 0) {
+        boostTimer = Math.max(0, boostTimer - dt);
+        if (boostTimer === 0) updatePowerupButtons();
+        else pwrBoostCnt.textContent = `${boostTimer.toFixed(1)}sn 2x!`;
+      }
+
+      // 3. Floating Bonus Spawner
+      bonusSpawnTimer -= dt;
+      if (bonusSpawnTimer <= 0) {
+        spawnFloatingBonus();
+        bonusSpawnTimer = randBetween(7.0, 11.0);
+      }
+
+      // 4. Boss AI State Machine
+      bossTimer -= dt;
+      if (bossState === 'WARNING' && bossPhaseTotal > 0) {
+        const ratio = Math.max(0, Math.min(1, bossTimer / bossPhaseTotal));
+        warnTimerBar.style.transform = `scaleX(${ratio})`;
+      }
+
+      if (bossTimer <= 0) {
+        if (bossState === 'WORKING' || bossState === 'COFFEE') {
+          setBossVisuals('WARNING');
+          bossTimer = cfg.warnTime;
+          bossPhaseTotal = cfg.warnTime;
+          updatePowerupButtons();
+        } else if (bossState === 'WARNING') {
+          if (Math.random() < cfg.fakeoutChance) {
+            setBossVisuals('WORKING');
+            bossTimer = randBetween(0.7, 1.3);
+            bossPhaseTotal = bossTimer;
+            spawnFloatingText('😮‍💨 SAHTE ALARM!');
+          } else {
+            setBossVisuals('LOOKING');
+            bossTimer = randBetween(cfg.lookMin, cfg.lookMax);
+            bossPhaseTotal = bossTimer;
+          }
+        } else if (bossState === 'LOOKING') {
+          setBossVisuals('WORKING');
+          if (Math.random() < cfg.doubleLookChance) {
+            bossTimer = randBetween(0.55, 0.85);
+          } else {
+            bossTimer = randBetween(cfg.workMin, cfg.workMax);
+          }
+          bossPhaseTotal = bossTimer;
+          edaStatusIcon.textContent = isKissing ? '❤️' : '💻';
+          ahmetStatusIcon.textContent = isKissing ? '❤️' : '💻';
+        }
+      }
+
+      // 5. Phone Hazard (Level 2+)
+      if (cfg.phoneEnabled) {
+        if (!phoneRinging) {
+          phoneSpawnTimer -= dt;
+          if (phoneSpawnTimer <= 0) {
+            phoneRinging = true;
+            phoneFailTimer = PHONE_MAX_TIME;
+            phoneHazard.classList.add('active');
+            sfx.phoneRing();
+          }
+        } else {
+          phoneFailTimer -= dt;
+          const pRatio = Math.max(0, Math.min(1, phoneFailTimer / PHONE_MAX_TIME));
+          phoneTimerBar.style.transform = `scaleX(${pRatio})`;
+          if (phoneFailTimer <= 0) {
+            triggerPenalty('🚨 TELEFONU AÇMADIN, PATRON DUYDU! (-15%)');
+            requestAnimationFrame(gameLoop);
+            return;
+          }
+        }
+      }
+
+      // 6. Kissing vs Innocent Working Mechanics
+      if (isKissing) {
+        if (bossState === 'LOOKING') {
+          lookGraceTimer -= dt;
+          visionCone.className = 'vision-cone active';
+          if (lookGraceTimer <= 0) {
+            triggerPenalty('🚨 PATRON ÖPÜŞÜRKEN YAKALADI! (-15%)');
+            requestAnimationFrame(gameLoop);
+            return;
+          }
+        }
+
+        kissHoldDuration += dt;
+        comboMultiplier = Math.min(3.0, 1.0 + Math.floor(kissHoldDuration * 1.2) * 0.5);
+
+        const isRisk = bossState === 'WARNING';
+        const riskFactor = isRisk ? 1.65 : 1.0;
+        const boostFactor = boostTimer > 0 ? 1.85 : 1.0;
+        progressFill.classList.toggle('risk-boost', isRisk && boostTimer <= 0);
+
+        if (comboMultiplier >= 1.5) {
+          comboBadge.textContent = `🔥 x${comboMultiplier.toFixed(1)}`;
+          comboBadge.classList.add('active');
+        }
+
+        progress += cfg.fillSpeed * riskFactor * boostFactor * dt;
+        score += 32 * comboMultiplier * riskFactor * boostFactor * dt;
+
+        particleTimer -= dt;
+        if (particleTimer <= 0) {
+          sfx.kissPop(comboMultiplier);
+          if (boostTimer > 0) {
+            spawnFloatingText('🎂 2x HIZ 💋');
+          } else if (isRisk) {
+            spawnFloatingText('🔥 RİSK +💋');
+          } else {
+            spawnFloatingText(`x${comboMultiplier.toFixed(1)} 💋`);
+          }
+          particleTimer = 0.24;
+        }
+
+        if (progress >= 100) {
+          progress = 100;
+          handleLevelComplete();
+        }
+      } else {
+        // Innocent employee bonus when Boss is looking and couple is working!
+        if (bossState === 'LOOKING') {
+          edaStatusIcon.textContent = '😇';
+          ahmetStatusIcon.textContent = '😇';
+          innocentTickTimer -= dt;
+          if (innocentTickTimer <= 0) {
+            score += 15;
+            spawnFloatingText('😇 Masum Çalışan +15');
+            innocentTickTimer = 0.75;
+          }
+        }
+        // Bar decays gently when not kissing (unless shield or boost is active)
+        if (progress > 0 && !shieldActive && boostTimer <= 0) {
+          progress = Math.max(0, progress - cfg.decayRate * dt);
+        }
+      }
+
+      updateHUD();
+    }
+
+    requestAnimationFrame(gameLoop);
+  }
+
+  // --- INPUTS ---
+  function startKiss(e) {
+    if (e && e.cancelable) e.preventDefault();
+    if (gameState !== 'PLAYING' || caughtCooldown) return;
+    sfx.init();
+    setKissingVisuals(true);
+  }
+
+  function stopKiss(e) {
+    if (e && e.cancelable) e.preventDefault();
+    if (!isKissing) return;
+    setKissingVisuals(false);
+  }
+
+  kissBtn.addEventListener('pointerdown', startKiss);
+  sceneArea.addEventListener('pointerdown', (e) => {
+    if (
+      e.target.closest('#phone-hazard') ||
+      e.target.closest('.floating-bonus') ||
+      e.target.closest('#wall-frame-card')
+    ) {
+      return;
+    }
+    startKiss(e);
+  });
+  window.addEventListener('pointerup', stopKiss);
+  window.addEventListener('pointercancel', stopKiss);
+
+  window.addEventListener('keydown', (e) => {
+    if (e.code === 'Space' && !e.repeat) startKiss();
+  });
+  window.addEventListener('keyup', (e) => {
+    if (e.code === 'Space') stopKiss();
+  });
+
+  // Top Buttons
+  document.getElementById('sound-btn').addEventListener('click', (e) => {
+    sfx.init();
+    sfx.muted = !sfx.muted;
+    e.currentTarget.textContent = sfx.muted ? '🔇' : '🔊';
+  });
+
+  document.getElementById('pause-btn').addEventListener('click', () => {
+    if (gameState === 'PLAYING') {
+      setKissingVisuals(false);
+      gameState = 'PAUSED';
+      pauseOverlay.classList.remove('hidden');
+    }
+  });
+
+  document.getElementById('resume-btn').addEventListener('click', () => {
+    pauseOverlay.classList.add('hidden');
+    gameState = 'PLAYING';
+  });
+
+  document.getElementById('switch-player-btn').addEventListener('click', () => {
+    pauseOverlay.classList.add('hidden');
+    updateScoreboards();
+    startOverlay.classList.remove('hidden');
+  });
+
+  document.getElementById('start-btn').addEventListener('click', () => {
+    sfx.init();
+    startOverlay.classList.add('hidden');
+    startLevel(1, true);
+  });
+
+  document.getElementById('next-level-btn').addEventListener('click', (e) => {
+    if (e.currentTarget.disabled) return;
+    sfx.init();
+    levelOverlay.classList.add('hidden');
+    startLevel(level + 1, false);
+  });
+
+  document.getElementById('retry-level-btn').addEventListener('click', () => {
+    sfx.init();
+    gameoverOverlay.classList.add('hidden');
+    startLevel(level, false);
+  });
+
+  document.getElementById('retry-same-btn').addEventListener('click', () => {
+    sfx.init();
+    gameoverOverlay.classList.add('hidden');
+    startLevel(1, true);
+  });
+
+  document.getElementById('pass-turn-btn').addEventListener('click', () => {
+    sfx.init();
+    gameoverOverlay.classList.add('hidden');
+    selectPlayer(currentPlayer === 'Eda' ? 'Ahmet' : 'Eda');
+    startLevel(1, true);
+  });
+
+  document.getElementById('play-again-btn').addEventListener('click', () => {
+    sfx.init();
+    stopConfetti();
+    victoryOverlay.classList.add('hidden');
+    updateScoreboards();
+    startOverlay.classList.remove('hidden');
+  });
+
+  // --- QR CODE MODAL ---
+  const PUBLIC_GAME_URL = 'https://thelastjedi1444-arch.github.io/eda-birthday/';
+
+  function openQrModal() {
+    const targetUrl = window.location.protocol.startsWith('http')
+      ? window.location.href
+      : PUBLIC_GAME_URL;
+    const qrApi = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=10&data=${encodeURIComponent(targetUrl)}`;
+    document.getElementById('qr-img').src = qrApi;
+    document.getElementById('qr-url-label').textContent = targetUrl;
+    if (gameState === 'PLAYING') {
+      setKissingVisuals(false);
+      gameState = 'PAUSED';
+    }
+    qrOverlay.classList.remove('hidden');
+  }
+
+  document.getElementById('qr-btn').addEventListener('click', openQrModal);
+  document.getElementById('lobby-qr-btn').addEventListener('click', openQrModal);
+
+  document.getElementById('close-qr-btn').addEventListener('click', () => {
+    qrOverlay.classList.add('hidden');
+  });
+
+  document.getElementById('copy-link-btn').addEventListener('click', (e) => {
+    const targetUrl = document.getElementById('qr-url-label').textContent || PUBLIC_GAME_URL;
+    navigator.clipboard?.writeText(targetUrl);
+    const btn = e.currentTarget;
+    btn.textContent = '✅ Link Kopyalandı!';
+    setTimeout(() => {
+      btn.textContent = '🔗 Oyun Linkini Kopyala';
+    }, 1800);
+  });
+
+  // --- CONFETTI FINALE ---
+  const confettiCanvas = document.getElementById('confetti-canvas');
+  const cCtx = confettiCanvas.getContext('2d');
+  let confettiPieces = [];
+  let confettiActive = false;
+
+  function startConfetti() {
+    confettiCanvas.width = confettiCanvas.offsetWidth;
+    confettiCanvas.height = confettiCanvas.offsetHeight;
+    confettiActive = true;
+    const colors = ['#f43f5e', '#fbbf24', '#10b981', '#38bdf8', '#a855f7', '#ffffff'];
+    confettiPieces = Array.from({ length: 75 }, () => ({
+      x: Math.random() * confettiCanvas.width,
+      y: Math.random() * -confettiCanvas.height,
+      size: 6 + Math.random() * 6,
+      speedY: 1.8 + Math.random() * 2.8,
+      speedX: -1.2 + Math.random() * 2.4,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      rot: Math.random() * 360
+    }));
+    requestAnimationFrame(drawConfetti);
+  }
+
+  function stopConfetti() {
+    confettiActive = false;
+    cCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+  }
+
+  function drawConfetti() {
+    if (!confettiActive) return;
+    cCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+    confettiPieces.forEach((p) => {
+      p.y += p.speedY;
+      p.x += p.speedX;
+      p.rot += 4;
+      if (p.y > confettiCanvas.height) {
+        p.y = -10;
+        p.x = Math.random() * confettiCanvas.width;
+      }
+      cCtx.save();
+      cCtx.translate(p.x, p.y);
+      cCtx.rotate((p.rot * Math.PI) / 180);
+      cCtx.fillStyle = p.color;
+      cCtx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.65);
+      cCtx.restore();
+    });
+    requestAnimationFrame(drawConfetti);
+  }
+
+  updateScoreboards();
+  requestAnimationFrame(gameLoop);
+</script>
+</body>
+</html>
