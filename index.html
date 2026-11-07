@@ -1079,6 +1079,18 @@
       display: block;
     }
 
+    .mobile-sound-tip {
+      background: rgba(244, 63, 94, 0.12);
+      border: 1px solid rgba(244, 63, 94, 0.25);
+      border-radius: 12px;
+      padding: 8px 12px;
+      font-size: 0.74rem;
+      color: #fda4af;
+      text-align: center;
+      margin-top: 10px;
+      line-height: 1.4;
+    }
+
     /* FLASH RED WHEN CAUGHT */
     .caught-flash {
       position: absolute;
@@ -1156,7 +1168,7 @@
     </div>
 
     <div class="hud-row-2">
-      <div class="stat-box" id="level-badge">Kat 1/4</div>
+      <div class="stat-box" id="level-badge">Kat 1/7</div>
       <div class="stat-box timer-box" id="timer-box">⏱️ <span id="time-val">38.0</span>s</div>
       <div class="combo-badge" id="combo-badge">🔥 x1.0</div>
       <div class="stat-box">Skor: <span id="score-val">0</span></div>
@@ -1362,7 +1374,7 @@
       <div class="modal-tag">Eda vs Ahmet • Doğum Günü Özel</div>
       <h1 class="modal-title">Ofiste Gizli Kaçamak 💋</h1>
       <p class="modal-text">
-        Satış ofisinde patrona yakalanmadan 4 katı kim daha yüksek skorla bitirecek? Jokerleri kullanın, telefonlara yetişin ve rekoru kırın!
+        Satış ofisinde patrona yakalanmadan 7 katı kim daha yüksek skorla bitirecek? Jokerleri kullanın, telefonlara yetişin ve rekoru kırın!
       </p>
 
       <div class="player-select-group">
@@ -1384,6 +1396,9 @@
 
       <button class="action-btn" id="start-btn">OYUNA BAŞLA 🚀</button>
       <button class="secondary-btn" id="lobby-qr-btn">📱 QR Kodu Göster (Telefondan Oyna)</button>
+      <div class="mobile-sound-tip">
+        🔊 <b>Mobil Ses İpucu:</b> Telefonunda ses duymuyorsan (özellikle iPhone'da) yan taraftaki <b>Sessiz Mod (turuncu) tuşunu kapat</b> ve ses seviyesini aç!
+      </div>
     </div>
   </div>
 
@@ -1494,65 +1509,88 @@
 </div>
 
 <script>
-  // --- AUDIO & HAPTICS ---
+  // --- AUDIO & HAPTICS (MOBILE OPTIMIZED & IOS UNLOCKED) ---
   class SoundFX {
     constructor() {
       this.ctx = null;
       this.muted = false;
+      this.unlocked = false;
     }
     init() {
       if (!this.ctx) {
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
         if (AudioCtx) this.ctx = new AudioCtx();
       }
-      if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
+      if (this.ctx) {
+        if (this.ctx.state === 'suspended') {
+          this.ctx.resume().catch(() => {});
+        }
+        if (!this.unlocked) {
+          try {
+            // Buffer unlock for iOS Safari & Mobile Chrome audio engine
+            const buffer = this.ctx.createBuffer(1, 1, 22050);
+            const source = this.ctx.createBufferSource();
+            source.buffer = buffer;
+            source.connect(this.ctx.destination);
+            source.start(0);
+            this.unlocked = true;
+          } catch (_) {}
+        }
+      }
     }
     vibrate(ms) {
       if (navigator.vibrate) {
         try { navigator.vibrate(ms); } catch (_) {}
       }
     }
-    playTone(freq, type, duration, vol = 0.1) {
-      if (this.muted || !this.ctx) return;
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-      osc.type = type;
-      osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
-      gain.gain.setValueAtTime(vol, this.ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
-      osc.connect(gain);
-      gain.connect(this.ctx.destination);
-      osc.start();
-      osc.stop(this.ctx.currentTime + duration);
+    playTone(freq, type, duration, vol = 0.3) {
+      if (this.muted) return;
+      this.init();
+      if (!this.ctx) return;
+      try {
+        if (this.ctx.state === 'suspended') {
+          this.ctx.resume().catch(() => {});
+        }
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+        gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + duration);
+      } catch (_) {}
     }
     kissPop(combo = 1) {
-      this.playTone(480 + Math.min(420, combo * 70), 'sine', 0.08, 0.08);
+      this.playTone(520 + Math.min(480, combo * 80), 'triangle', 0.12, 0.35);
     }
     dodgeChime() {
-      this.playTone(660, 'sine', 0.1, 0.12);
-      setTimeout(() => this.playTone(990, 'sine', 0.15, 0.14), 70);
+      this.playTone(720, 'sine', 0.14, 0.38);
+      setTimeout(() => this.playTone(1080, 'sine', 0.18, 0.40), 75);
     }
     powerupChime() {
-      [587, 784, 1046].forEach((n, i) =>
-        setTimeout(() => this.playTone(n, 'triangle', 0.13, 0.13), i * 65)
+      [659, 880, 1174].forEach((n, i) =>
+        setTimeout(() => this.playTone(n, 'triangle', 0.16, 0.35), i * 75)
       );
     }
     phoneRing() {
-      this.playTone(880, 'square', 0.08, 0.11);
-      setTimeout(() => this.playTone(1046, 'square', 0.08, 0.11), 90);
+      this.playTone(980, 'square', 0.10, 0.32);
+      setTimeout(() => this.playTone(1174, 'square', 0.10, 0.32), 95);
     }
     warnBeep() {
-      this.playTone(720, 'triangle', 0.12, 0.13);
+      this.playTone(760, 'sawtooth', 0.14, 0.35);
     }
     caughtBuzzer() {
-      this.vibrate([120, 60, 180]);
-      this.playTone(145, 'sawtooth', 0.35, 0.17);
-      setTimeout(() => this.playTone(108, 'sawtooth', 0.38, 0.17), 110);
+      this.vibrate([140, 70, 200]);
+      this.playTone(165, 'sawtooth', 0.40, 0.45);
+      setTimeout(() => this.playTone(120, 'sawtooth', 0.42, 0.45), 110);
     }
     levelWin() {
-      this.vibrate([60, 40, 120]);
-      [523, 659, 784, 1046].forEach((n, i) =>
-        setTimeout(() => this.playTone(n, 'sine', 0.22, 0.14), i * 95)
+      this.vibrate([70, 50, 140]);
+      [523, 659, 784, 1046, 1318].forEach((n, i) =>
+        setTimeout(() => this.playTone(n, 'triangle', 0.25, 0.35), i * 100)
       );
     }
   }
@@ -1628,7 +1666,7 @@
 
   let gameState = 'MENU';
   let level = 1;
-  const maxLevels = 4;
+  const maxLevels = 7;
   let score = 0;
   let lives = 3;
   let progress = 0;
@@ -1662,20 +1700,20 @@
   let lastFrameTime = performance.now();
   let particleTimer = 0;
 
-  // PLAYABLE, FUN, SKILL-BASED LEVEL CONFIGURATIONS
+  // PLAYABLE, FUN, SKILL-BASED LEVEL CONFIGURATIONS (7 EXCITING FLOORS)
   const LEVEL_CONFIG = {
     1: {
       name: '1. Kat: Satış Ofisi',
       hazardDesc: 'Isınma Turu + Rahat Patron',
       timeLimit: 38,
-      fillSpeed: 23.5,
-      decayRate: 2.2,
-      workMin: 1.8,
-      workMax: 3.1,
+      fillSpeed: 24.0,
+      decayRate: 2.0,
+      workMin: 1.9,
+      workMax: 3.2,
       warnTime: 0.95,
       lookMin: 1.1,
-      lookMax: 1.8,
-      fakeoutChance: 0.15,
+      lookMax: 1.7,
+      fakeoutChance: 0.12,
       doubleLookChance: 0.0,
       phoneEnabled: false,
       kissPenaltyCount: 2
@@ -1684,55 +1722,109 @@
       name: '2. Kat: Müşteri Hattı',
       hazardDesc: 'Çalan Telefonlar (+Süre Verir)',
       timeLimit: 36,
-      fillSpeed: 21.5,
-      decayRate: 3.2,
-      workMin: 1.4,
-      workMax: 2.6,
-      warnTime: 0.80,
+      fillSpeed: 22.5,
+      decayRate: 2.8,
+      workMin: 1.5,
+      workMax: 2.7,
+      warnTime: 0.85,
       lookMin: 1.1,
-      lookMax: 1.9,
-      fakeoutChance: 0.22,
-      doubleLookChance: 0.18,
+      lookMax: 1.8,
+      fakeoutChance: 0.18,
+      doubleLookChance: 0.15,
       phoneEnabled: true,
-      phoneIntervalMin: 6.5,
-      phoneIntervalMax: 10.0,
+      phoneIntervalMin: 6.8,
+      phoneIntervalMax: 10.2,
       kissPenaltyCount: 3
     },
     3: {
-      name: '3. Kat: Ay Sonu Hedefi',
-      hazardDesc: 'Şüpheci Patron + Çift Bakış',
-      timeLimit: 34,
-      fillSpeed: 20.5,
-      decayRate: 4.2,
-      workMin: 1.1,
-      workMax: 2.2,
-      warnTime: 0.68,
+      name: '3. Kat: Muhasebe & Arşiv',
+      hazardDesc: 'Evrak Teftişi + Ani Dönüşler',
+      timeLimit: 35,
+      fillSpeed: 21.8,
+      decayRate: 3.4,
+      workMin: 1.3,
+      workMax: 2.4,
+      warnTime: 0.78,
       lookMin: 1.1,
-      lookMax: 2.0,
-      fakeoutChance: 0.25,
-      doubleLookChance: 0.30,
+      lookMax: 1.9,
+      fakeoutChance: 0.22,
+      doubleLookChance: 0.22,
       phoneEnabled: true,
-      phoneIntervalMin: 5.5,
-      phoneIntervalMax: 8.5,
-      kissPenaltyCount: 4
+      phoneIntervalMin: 6.2,
+      phoneIntervalMax: 9.2,
+      kissPenaltyCount: 3
     },
     4: {
-      name: '4. Kat: Büyük Doğum Günü Finali',
-      hazardDesc: 'Maksimum Heyecan + Joker Desteği',
-      timeLimit: 33,
-      fillSpeed: 20.0,
-      decayRate: 5.0,
-      workMin: 0.95,
-      workMax: 1.9,
-      warnTime: 0.58,
+      name: '4. Kat: Strateji Salonu',
+      hazardDesc: 'Ciddi Sunum + Çift Bakış',
+      timeLimit: 34,
+      fillSpeed: 21.2,
+      decayRate: 4.0,
+      workMin: 1.2,
+      workMax: 2.2,
+      warnTime: 0.72,
+      lookMin: 1.1,
+      lookMax: 1.9,
+      fakeoutChance: 0.26,
+      doubleLookChance: 0.30,
+      phoneEnabled: true,
+      phoneIntervalMin: 5.6,
+      phoneIntervalMax: 8.6,
+      kissPenaltyCount: 4
+    },
+    5: {
+      name: '5. Kat: Kahve & Mola Alanı',
+      hazardDesc: 'Hızlı Kaçamaklar + Patron Takibi',
+      timeLimit: 34,
+      fillSpeed: 20.8,
+      decayRate: 4.4,
+      workMin: 1.1,
+      workMax: 2.0,
+      warnTime: 0.65,
       lookMin: 1.2,
       lookMax: 2.0,
       fakeoutChance: 0.28,
-      doubleLookChance: 0.38,
+      doubleLookChance: 0.35,
+      phoneEnabled: true,
+      phoneIntervalMin: 5.2,
+      phoneIntervalMax: 8.0,
+      kissPenaltyCount: 4
+    },
+    6: {
+      name: '6. Kat: Yönetim & CEO Odası',
+      hazardDesc: 'Kritik Raporlar + Şüpheci Bakışlar',
+      timeLimit: 33,
+      fillSpeed: 20.2,
+      decayRate: 4.8,
+      workMin: 1.0,
+      workMax: 1.8,
+      warnTime: 0.60,
+      lookMin: 1.2,
+      lookMax: 2.0,
+      fakeoutChance: 0.30,
+      doubleLookChance: 0.40,
       phoneEnabled: true,
       phoneIntervalMin: 4.8,
-      phoneIntervalMax: 7.8,
+      phoneIntervalMax: 7.5,
       kissPenaltyCount: 5
+    },
+    7: {
+      name: '7. Kat: Teras & Büyük Doğum Günü Finali',
+      hazardDesc: 'Maksimum Heyecan + Şampiyonluk Aşkı',
+      timeLimit: 33,
+      fillSpeed: 20.0,
+      decayRate: 5.0,
+      workMin: 0.9,
+      workMax: 1.7,
+      warnTime: 0.55,
+      lookMin: 1.2,
+      lookMax: 2.0,
+      fakeoutChance: 0.32,
+      doubleLookChance: 0.42,
+      phoneEnabled: true,
+      phoneIntervalMin: 4.4,
+      phoneIntervalMax: 7.0,
+      kissPenaltyCount: 6
     }
   };
 
@@ -2140,9 +2232,9 @@
 
     // Replenish tactical office power-ups each level!
     powerCharges = {
-      coffee: level >= 3 ? 2 : 1,
-      shield: 1,
-      boost: level >= 2 ? 2 : 1
+      coffee: level >= 5 ? 3 : (level >= 3 ? 2 : 1),
+      shield: level >= 4 ? 2 : 1,
+      boost: level >= 3 ? 2 : 1
     };
     shieldActive = false;
     boostTimer = 0;
@@ -2361,6 +2453,20 @@
     sfx.init();
     sfx.muted = !sfx.muted;
     e.currentTarget.textContent = sfx.muted ? '🔇' : '🔊';
+    if (!sfx.muted) {
+      sfx.playTone(880, 'sine', 0.15, 0.40);
+    }
+  });
+
+  // Mobile Audio Unlock: Awaken Web Audio API on first user interaction anywhere
+  ['touchstart', 'touchend', 'pointerdown', 'click'].forEach((evt) => {
+    window.addEventListener(
+      evt,
+      () => {
+        sfx.init();
+      },
+      { passive: true, capture: true }
+    );
   });
 
   document.getElementById('pause-btn').addEventListener('click', () => {
